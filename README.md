@@ -57,7 +57,7 @@ It keeps going, but you get the point.  Now let's say that we wanted to count up
 
 Let's call these steps above **our plan**.  At the end of this lesson and after completing each step of our above plan, we will have a chart, like the one below, giving us a visualization of the most repetitious words in the Beach Boys' song, *Barbara Ann*. 
 
-![](https://s3.amazonaws.com/learn-verified/data-science-assets/beach_boys_repitition_chart.png)
+![](images/count_plot.png)
 
 Great! Now let's translate our plan into code and make our chart!
 
@@ -69,6 +69,13 @@ To solve this problem with code, we do something similar.  We start with our wor
 ```python
 "Ah, Ba Ba Ba Ba Barbara Ann Ba Ba Ba Ba Barbara Ann Oh Barbara Ann Take My Hand Barbara Ann You Got Me Rockin' And A-Rollin' Rockin' And A-Reelin' Barbara Ann Ba Ba Ba Barbara Ann ...More Lyrics... Ba Ba Ba Ba Barbara Ann Ba Ba Ba Ba Barbara Ann"
 ```
+
+
+
+
+    "Ah, Ba Ba Ba Ba Barbara Ann Ba Ba Ba Ba Barbara Ann Oh Barbara Ann Take My Hand Barbara Ann You Got Me Rockin' And A-Rollin' Rockin' And A-Reelin' Barbara Ann Ba Ba Ba Barbara Ann ...More Lyrics... Ba Ba Ba Ba Barbara Ann Ba Ba Ba Ba Barbara Ann"
+
+
 
 > **Note:** What you see above in the first gray box is Python code.  The content in this box is the code you would write.  What comes below this first box is the **output** of running the code.  So the output of creating a string, is just that same string - not very interesting. 
 
@@ -122,6 +129,13 @@ Ok, so this is a `list`. It's an ordered collection, and as you can see we are n
 len(list_of_lyrics)
 ```
 
+
+
+
+    51
+
+
+
 Ok, but remember the second step of our plan was to allocate space for each unique word. Now that we have a list of all words, let's make a list of the unique words.
 
 
@@ -143,69 +157,119 @@ Ok, you may have noticed that our list of unique words is significantly smaller 
 len(unique_words)
 ```
 
+
+
+
+    17
+
+
+
 A lot.
 
 So, there's a lot of repetition in `Barbara Ann`.  It's time to keep track of each word and the number of occurrences of each word.
 
-### Using dictionaries
+### Sets vs Lists
 
-Our ultimate goal is to present our list of repetitions almost as a table, with a word to the left and the number of occurrences to the right.  
+Our ultimate goal is to present our list of repetitions almost as a table, with a (unique) word to the left and the number of occurrences to the right.  
 
-| Word        | Count           |
+| unique_words        | count           |
 | ------------- |:-------------:|
 | Ann     | 2 |
 | Barbara     | 3 |
 | Ba     | 8 |
 
-In Python, this looks like a dictionary.
+You already have a collection with the unique words: 
 
 
 ```python
-word_counts =  {'Ann': 2, 'Barbara': 3, 'Ba': 8}
+unique_words
 ```
 
-A dictionary is a collection of key-value pairs which we use to store associated data. Here, each word is associated with its count, and we can use the key to access the associated value.
+
+
+
+    ['Ah,',
+     'Hand',
+     'You',
+     "Rockin'",
+     'Ba',
+     'Barbara',
+     'Take',
+     'Me',
+     'And',
+     'Got',
+     "A-Rollin'",
+     "A-Reelin'",
+     '...More',
+     'Lyrics...',
+     'Ann',
+     'Oh',
+     'My']
+
+
+
+One small technicality about this `unique_words`-collection is that it is currently in a _set_ (which is why this collection has the curly brackets `{}`. One of the properties of a _set_ is that the order of the elements in the set doesn't matter. What does that mean? Let's look at a simple example. `set_1` and `set_2` below are two sets, which contain the same elements (1, 2 and 3). 
 
 
 ```python
-word_counts['Ann']
+set_1 = set({1,2,3})
+set_2 = set({2,1,3})
 ```
 
-We can also use the key to reassign that value.
+Despite their different ordering, these two sets are identical! How can we tell? Let's compare them (comparing in Python can be done by using `==`.
 
 
 ```python
-word_counts['Ann'] = 33
+set_1 == set_2
 ```
+
+
+
+
+    True
+
+
+
+Python tells us that these sets are identical! Wow! What about lists? Let's have a look:
 
 
 ```python
-word_counts
+list_1 = list([1,2,3])
+list_2 = list([1,3,2])
+
+list_1 == list_2
 ```
 
-So that's the form we want. How do we get there with our list of lyrics?
 
-Well we start by creating a dictionary with each key as a separate word, and then set the corresponding value to zero.  Kind of like allocating a region on a table for each of our words.  We do this with the `unique_words` list and the `fromkeys` method, whose second argument is the value we set for each key.
 
-```python 
-word_histogram = dict.fromkeys(unique_words, 0)
-```
+
+    False
+
+
+
+The order matters for lists! Why does this matter to us? One of the steps in **our plan** was:
+
+> - Designate a spot for each unique word in our index cards
+
+We need to make sure our order of unique words is fixed, because we will start matching a value to it (the value being equal to how often the word occurs in the song). So let's convert our `unique_words`-set to a list. We can do this by using one simple line of code:
+
 
 ```python
-{'...More': 0, "A-Reelin'": 0, "A-Rollin'": 0, 'Ah,': 0, 'And': 0, 'Ann': 0, 'Ba': 0, 'Barbara': 0, 'Got': 0, 'Hand': 0, 'Lyrics...': 0, 'Me': 0, 'My': 0, 'Oh': 0, "Rockin'": 0, 'Take': 0, 'You': 0}
+unique_words = list(unique_words)
 ```
 
 ### Loops
 
-Ok, now we have two nice data structures. A `list_of_lyrics` of all of our words, and a `word_histogram` to keep track of the amount of words. It seems like we're making good progress. Let's look again at our plan.
+Next up, you'll want to create a collection holding the number of occurrences for each of these words (the `count`). How do we get there?
+
+Ok, now we have two nice data structures. A `list_of_lyrics` of all of our words, and `unique_words` with each word only occurring once. It seems like we're making good progress. Let's look again at our plan.
 
 * Place each of the words on a separate index card. 
     * **Complete** as `list_of_lyrics`
-* Allocate space for a small pile for each unique word
-    * **Complete** as `word_histogram`
+* Designate a spot for each unique word in our index cards
+    * **Complete** as `unique_words`
 * Then, go through the index cards one by one
 * And for each index card, increase the size of its related pile by one
-
 
 So looking through the steps, all that's left are the last two steps.
 
@@ -213,76 +277,114 @@ In Python, to go through elements of a list one by one, we use a `for` loop.
 
 
 ```python
-for number in [1,2,3,4]:
+for number in [1,2,3]:
     print(number + 10)
 ```
 
-Ok, so here we want to go through the elements of our `list_of_lyrics` one by one. For each word in `list_of_lyrics`, we want to find the related key in the dictionary, `word_histogram`, and increase the value by one. So now, instead of looping through a list of numbers, we will loop through each of our words in `list_of_lyrics`, find the related value in the dictionary, and increase it by one.
+    11
+    12
+    13
+
+
+Ok, so here we want to go through the elements of our `list_of_lyrics` one by one. For each word in `unique_words`, we want to count how many times it occurs in `list_of_lyrics`. 
 
 > **Deep breath** These next lines of code may look like magic.  The lessons that follow will explain them.
 
 
 ```python
-word_histogram = dict.fromkeys(unique_words, 0)
-for word in list_of_lyrics:
-    word_histogram[word] = word_histogram[word]+ 1 
+count = []
+for word in unique_words:
+    count.append(list_of_lyrics.count(word))
 ```
 
-> We said it would be confusing.  Good thing there are more lessons to explain it.  Let's see if it worked.
+In human language, this is what happened:
 
-```python
-word_histogram
-```
+> You used your `list_of_lyrics` and looked at each word in your `unique_words`-list and counted (method `.count()`, you'll learn more on that in future lessons) how often time this word occured in your `list_of_lyrics`! To store the result, you started off by creating an empty list (using `[]`) and use .append() to add new numbers in each iteration of your loop.
 
-```python
-{'...More': 1, "A-Reelin'": 1, "A-Rollin'": 1, 'Ah,': 1, 'And': 2, 'Ann': 8, 'Ba': 19, 'Barbara': 8, 'Got': 1, 
- 'Hand': 1, 'Lyrics...': 1, 'Me': 1, 'My': 1, 'Oh': 1, "Rockin'": 2, 'Take': 1, 'You': 1}
-```
-
-Ok, that's it.  Now if we want to see how many times 'Rockin' appears, we can do so easily.
+We said it would be slightly confusing.  Good thing there are more lessons to explain it.  Let's see if it worked.
 
 
 ```python
-word_histogram["Rockin'"]
+count
 ```
+
+
+
+
+    [1, 1, 1, 2, 19, 8, 1, 1, 2, 1, 1, 1, 1, 1, 8, 1, 1]
+
+
+
+Let's now look at `unique_words` again. 
+
+
+```python
+unique_words
+```
+
+
+
+
+    ['Ah,',
+     'Hand',
+     'You',
+     "Rockin'",
+     'Ba',
+     'Barbara',
+     'Take',
+     'Me',
+     'And',
+     'Got',
+     "A-Rollin'",
+     "A-Reelin'",
+     '...More',
+     'Lyrics...',
+     'Ann',
+     'Oh',
+     'My']
+
+
+
+Some observations:
+
+- The 4th word in your `unique_words` list ("Rockin'") occurs _twice_, so the 4th element of `unique_words` is 2! 
+- "Ba" is the most common word, occurring 19 times. 
+
+It looks like our for loop worked!
 
 ### Visualizing the data
 
-We've got our answer in code.  The final step is to turn it into a chart.  We'll use a library -- which is a collection of code we get from the Internet that does not come with Python -- called Plotly to make our charts.
+We've got our answer in code.  The final step is to turn it into a chart.  We'll use a library -- which is a collection of code that allows you to perform many actions without having to write a ton of lines of code that does not come with Python -- called `matplotlib` to make our charts.
 
-If you do not have Plotly, you can install it using:
+If you do not have Matplotlib installed, you can install it using:
 
-
-```python
-!pip install plotly==3.3.0
-```
-
-In the first four lines we tell Python to get ready to use this library.  And in the last line we tell Python to plot our `trace`.
-
-The meat of the code is our `trace`.  A trace points to a dictionary with a key of `x` that points to a list of x_values, and a key of `y` that points to y_values.  And a `type` to indicate that this will be a bar chart.
 
 ```python
-import plotly
-from plotly.offline import iplot, init_notebook_mode
-from plotly import tools
-import plotly.graph_objs as go
-init_notebook_mode(connected=True)
-
-trace = {'type': 'bar', 'x': list(unique_words), 'y': list(word_histogram.values())}
-
-plotly.offline.iplot({'data': [trace]})
+!pip install matplotlib=3.1.1
 ```
 
-![](https://s3.amazonaws.com/learn-verified/data-science-assets/beach_boys_repitition_chart.png)
+In the two lines we tell Python to get ready to use this library.  And in the last line we tell Python to show the plot.
 
-Above we can see that `x` points to a `list` of the `unique_words`, and `y` points to the `list` of values from our `word_histogram`, which represent the number of times each word appears. 
+The third line of code sets the size of the figure. If you don't set the figure size, your figure will be pretty small and hard to read. The fourth line is the meat of the code, mapping the `unique_words`-list to the respective `count`, using a bar plot. We then set the y-ticks, so our y-axis is readable and clearly states the respective count.
 
-We have now plotted our words! We can see that The Beach Boys say "Ba" 19 times, and remember we only copied over some of the lyrics!  Repetitive indeed.
+```python
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+plt.figure(figsize=(18,8))
+plt.bar(unique_words, count, width = 0.8)
+plt.yticks(range(1,21))
+plt.show()
+```
+
+![](images/count_plot.png)
+
+We have now plotted our words! We can see that The Beach Boys say "Ba" 19 times, and remember that we only copied over some of the lyrics!  Repetitive indeed.
 
 ### Summary
 
 Hopefully, in this section you can see that even with just a bit of knowledge we can really put code to use. It may have seemed like a lot of work, but the work was in the learning, not the code.  
 
-All of the code written so far was really just six lines of code plus another 8 lines to plot our chart, giving us a grand total of a mere 14 lines of code! 
+All of the code written so far was really just seven lines of code plus another six lines to plot our chart, giving us a grand total of a mere 13 lines of code! 
 
 In the following sections, we will cover the topics we introduced in this lesson and more, so that we can begin use the tools above to explore information with code.
